@@ -33,6 +33,14 @@
     <script src="js/app.js"></script>
     <script src="js/controllers.js"></script>
     <script src="js/services.js"></script>
+
+    <style>
+    .breaking{
+      max-width:500px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    </style>
   </head>
   <body ng-app="todo" ng-controller="TodoCtrl">
     <ion-side-menus>
@@ -50,8 +58,16 @@
         </ion-header-bar>
         <ion-content scroll="true">
           <ion-list>
+            <!-- TODO: FIX TEXT GOING OFF SCREEN -->
             <ion-item ng-repeat="task in activeProject.tasks">
-              {{task.title}}
+              <div class="breaking" ng-bind-html="task.title"></div>
+              <button style="float: right" class="button button-icon button-small" ng-click="removeTask(task)">
+                <i class="icon ion-trash-a"></i>
+              </button>
+              <button style="float:right" class="button button-icon button-small"
+              ng-click="doEdit(task)">
+                <i class="icon ion-edit"></i>
+              </button>
             </ion-item>
           </ion-list>
         </ion-content>
@@ -61,18 +77,15 @@
       <ion-side-menu side="left">
         <ion-header-bar class="bar-dark">
           <h1 class="title">Projects</h1>
-          <button class = "button button-icon ion-plus" ng-click="newProject()">
-          </button>
+          <button class = "button button-icon ion-plus" ng-click="makeProject()"></button>
         </ion-header-bar>
         <ion-content scroll='true'>
           <ion-list>
-            <ion-item ng-repeat='project in projects' ng-click=
-            'selectProject(project, $index)' ng-class=
-            '{active: activeProject == project}'>
+            <ion-item ng-repeat="project in projects" ng-click = "selectProject(project, $index)" ng-class="{active: activeProject == project}">
               {{project.title}}
             </ion-item>
           </ion-list>
-        <ion-content>
+        </ion-content>
       </ion-side-menu>
 
       <script id="new-task.html" type="text/ng-template">
@@ -83,20 +96,68 @@
             ng-click="closeNewTask()">Cancel</button>
           </ion-header-bar>
 
-          <ion-content>
+          <ion-content scroll="false">
             <form ng-submit="createTask(task)">
               <div class="list">
                 <label class="item item-input">
-                  <input type="text" placeholder="Whats up?"
-                  ng-model="task.title">
+                  <textarea style="resize:none" cols="123" rows="8" placeholder="Add a new task..."
+                  ng-model="task.title"></textarea>
                 </label>
               </div>
               <div class="padding">
                 <button type="submit" class="button button-block
-                button-royal">Create Task</button>
+                button-royal">Add</button>
               </div>
             </form>
           </ion-conent>
+        </div>
+      </script>
+
+      <script id="edit-task.html" type="text/ng-template">
+        <div class="modal">
+          <ion-header-bar class="bar-secondary">
+            <h1 class="title">Edit Task</h1>
+            <button class="button button-clear button-royal"
+            ng-click="closeEditTask()">Cancel</button>
+          </ion-header-bar>
+          <ion-content scroll="false">
+            <form ng-submit="finishEdit()">
+              <div class="list">
+                <label class="item item-input">
+                  <textarea style="resize:none" cols="123" rows="8" placeholder="Edit task..."
+                  ng-model="formData.newtitle"></textarea>
+                </label>
+              </div>
+              <div class="padding">
+                <button type="submit" class="button button-bar button-royal" ng-click="setNew()">
+                  Edit</button>
+              </div>
+            </form>
+          </ion-content>
+        </div>
+      </script>
+
+      <script id="project.html" type="text/ng-template">
+        <div class="modal">
+          <ion-header-bar class="bar-secondary">
+            <h1 class="title">Add Project</h1>
+            <button class="button button-clear button-royal"
+            ng-click="closeAddProject()">Cancel</button>
+          </ion-header-bar>
+          <ion-content scroll="false">
+            <form ng-submit="createProject(name)">
+              <div class="list">
+                <label class="item item-input">
+                  <textarea style="resize:none" cols='123' rows='8' placeholder="Add project..."
+                  ng-model="name"></textarea>
+                </label>
+              </div>
+              <div class="padding">
+                <button type="submit" class="button button-bar button-royal">
+                  Add</button>
+              </div>
+            </form>
+          </ion-content>
         </div>
       </script>
 

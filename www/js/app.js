@@ -7,9 +7,9 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
-angular.module('todo', ['ionic'])
+var app = angular.module('todo', ['ionic']);
 
-.factory('Projects', function() {
+app.factory('Projects', function() {
   return {
     all: function() {
       var projectString = window.localStorage['projects'];
@@ -34,24 +34,26 @@ angular.module('todo', ['ionic'])
       window.localStorage['lastActiveProject'] = index;
     }
   }
-})
+});
 
-.controller('TodoCtrl', function($scope, $timeout, $ionicModal,
+
+app.controller('TodoCtrl', function ($scope, $rootScope, $timeout, $ionicModal,
 Projects, $ionicSideMenuDelegate) {
 
-  var createProject = function(projectTitle) {
+  $scope.createProject = function(projectTitle) {
+    //console.log("projectTitle", projectTitle);
     var newProject = Projects.newProject(projectTitle);
     $scope.projects.push(newProject);
     Projects.save($scope.projects);
     $scope.selectProject(newProject, $scope.projects.length-1);
+    $scope.projectModal.hide();
   }
-
   $scope.projects = Projects.all();
 
   $scope.activeProject = $scope.projects[Projects.getLastActiveIndex()];
 
-  $scope.newProject = function() {
-    var projectTitle = prompt('Project name');
+  $scope.newProject = function(name) {
+    var projectTitle = name;
     if(projectTitle) {
       createProject(projectTitle);
     }
@@ -66,9 +68,17 @@ Projects, $ionicSideMenuDelegate) {
   $ionicModal.fromTemplateUrl('new-task.html', function(modal) {
     $scope.taskModal = modal;
   }, {
-    scope: $scope//,
-    //animation: 'slide-in-up'
+    scope: $scope,
+    animation: 'slide-in-up'
   });
+
+  $ionicModal.fromTemplateUrl('edit-task.html', function(modal) {
+    $scope.taskEditModal = modal;
+  }, {
+    scope: $scope,
+    animation: 'slide-in-up'
+  });
+
 
   $scope.createTask = function(task) {
     if(!$scope.activeProject || !task) {
@@ -82,30 +92,45 @@ Projects, $ionicSideMenuDelegate) {
     task.title = "";
   };
 
+  $scope.formData = {};
 
+  $scope.doEdit = function(task) {
+    // console.log('doedit, TITLE = ', $scope.formData.newtitle);
+    $scope.taskEditModal.show();
+    var index = $scope.activeProject.tasks.indexOf(task);
+    $rootScope.etask = task;
+    $rootScope.eindex = index;
+    // console.log('index= ', $rootScope.eindex)
+    //$scope.activeProject.tasks[index].title = "test";
+  };
+  $scope.removeTask = function(task) {
+    var index = $scope.activeProject.tasks.indexOf(task);
+    $scope.activeProject.tasks.splice(index, 1);
+    Projects.save($scope.projects);
+  };
 
-  //}
+  $scope.setNew = function() {
+    $rootScope.etitle = $rootScope.newtitle;
+    // console.log('setnew, title = ', $scope.formData.newtitle);
+  }
 
-  $scope.tasks = [
-    {title: 'Get paid'},
-    {title: 'Get laid'},
-    {title: 'Gatorade'}
-  ];
+  $scope.editTask = function(task) {
+    $scope.taskEditModal.show();
+    //$scope.doEdit(task);
+  };
 
-  // $ionicModal.fromTemplateUrl('new-task.html', function(modal) {
-  //   $scope.taskModal = modal;
-  // }, {
-  //   scope: $scope,
-  //   animation: 'slide-in-up'
-  // });
+  $scope.finishEdit = function() {
+    // console.log('finish SCOPE TITLE', $scope.formData.newtitle);
+    // console.log($rootScope.eindex, $scope.formData.newtitle);
+    $scope.activeProject.tasks[$rootScope.eindex].title = $scope.formData.newtitle;
+    Projects.save($scope.projects);
+    $scope.taskEditModal.hide();
+    $scope.formData.newtitle = '';
+  };
 
-  // $scope.createTask = function(task) {
-  //   $scope.tasks.push({
-  //     title: task.title
-  //   });
-  //   $scope.taskModal.hide();
-  //   task.title="";
-  // };
+  $scope.closeEditTask = function() {
+    $scope.taskEditModal.hide();
+  };
 
   $scope.newTask = function() {
     $scope.taskModal.show();
@@ -119,21 +144,29 @@ Projects, $ionicSideMenuDelegate) {
     $ionicSideMenuDelegate.toggleLeft();
   };
 
+  $ionicModal.fromTemplateUrl('project.html', function(modal) {
+    $scope.projectModal = modal;
+  }, {
+    scope: $scope,
+    animation: 'slide-in-up'
+  });
+
+  $scope.closeAddProject = function() {
+    $scope.projectModal.hide();
+  };
+
+  $scope.makeProject = function() {
+    $scope.projectModal.show();
+  };
+
   $timeout(function() {
     if($scope.projects.length == 0) {
-      while(true) {
-        var projectTitle = prompt('Your first project title:');
-        if(projectTitle) {
-          createProject(projectTitle);
-          break;
-        }
-      }
+      $scope.makeProject();
     }
   }, 1000);
+});
 
-})
-
-.run(function($ionicPlatform) {
+app.run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -147,9 +180,9 @@ Projects, $ionicSideMenuDelegate) {
       StatusBar.styleDefault();
     }
   });
-})
+});
 
-.config(function($stateProvider, $urlRouterProvider) {
+app.config(function($stateProvider, $urlRouterProvider) {
 
   // Ionic uses AngularUI Router which uses the concept of states
   // Learn more here: https://github.com/angular-ui/ui-router
@@ -209,3 +242,34 @@ Projects, $ionicSideMenuDelegate) {
   $urlRouterProvider.otherwise('/tab/dash');
 
 });
+
+// .controller("EditCtrl", function($scope, $ionicModal, Projects) {
+//
+//   $ionicModal.fromTemplateUrl('edit-task.html', function(modal) {
+//     $scope.taskEditModal = modal;
+//   }, {
+//     scope: $scope,
+//     animation: 'slide-in-up'
+//   });
+//
+//   $scope.doEdit = function(task) {
+//     if(!$scope.activeProject || !task) {
+//       return;
+//     }
+//     var tasks = $scope.activeProject.tasks;
+//     var index = $scope.activeProject.tasks.indexOf(task);
+//     tasks[index].title = task.title;
+//     $scope.taskModal.hide();
+//     Projects.save($scope.projects);
+//   };
+//
+//   $scope.editTask = function(task) {
+//     $scope.taskEditModal.show();
+//   };
+//
+//   $scope.closeEditTask = function() {
+//     $scope.taskEditModal.hide();
+//   };
+//
+//
+// })
