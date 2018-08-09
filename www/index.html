@@ -2,7 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <meta name="viewport" content="viewport-fit=cover, width=device-width,
+    initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title></title>
 
     <link rel="manifest" href="manifest.json">
@@ -34,13 +35,6 @@
     <script src="js/controllers.js"></script>
     <script src="js/services.js"></script>
 
-    <style>
-    .breaking{
-      max-width:500px;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-    </style>
   </head>
   <body ng-app="todo" ng-controller="TodoCtrl">
     <ion-side-menus>
@@ -52,15 +46,19 @@
             <i class="icon ion-navicon"></i>
           </button>
           <h1 class="title">{{activeProject.title}}</h1>
+          <button style="float: right" class="button button-icon" ng-click="delProject(activeProject)">
+            <i class="icon ion-close"></i>
+          </button>
           <button class="button button-icon" ng-click="newTask()">
             <i class="icon ion-compose"></i>
           </button>
         </ion-header-bar>
         <ion-content scroll="true">
           <ion-list>
-            <!-- TODO: FIX TEXT GOING OFF SCREEN -->
-            <ion-item ng-repeat="task in activeProject.tasks">
-              <div class="breaking" ng-bind-html="task.title"></div>
+            <ion-item ng-repeat="task in activeProject.tasks" class="item-remove-animate">
+              <div style="white-space: pre-line">
+                {{task.title}}
+              </div>
               <button style="float: right" class="button button-icon button-small" ng-click="removeTask(task)">
                 <i class="icon ion-trash-a"></i>
               </button>
@@ -81,7 +79,7 @@
         </ion-header-bar>
         <ion-content scroll='true'>
           <ion-list>
-            <ion-item ng-repeat="project in projects" ng-click = "selectProject(project, $index)" ng-class="{active: activeProject == project}">
+            <ion-item class="item-remove-animate" ng-repeat="project in projects" ng-click ="selectProject(project, $index)" ng-class="{active: activeProject == project}">
               {{project.title}}
             </ion-item>
           </ion-list>
@@ -101,7 +99,7 @@
               <div class="list">
                 <label class="item item-input">
                   <textarea style="resize:none" cols="123" rows="8" placeholder="Add a new task..."
-                  ng-model="task.title"></textarea>
+                  ng-model="task.title" autofocus></textarea>
                 </label>
               </div>
               <div class="padding">
@@ -125,7 +123,7 @@
               <div class="list">
                 <label class="item item-input">
                   <textarea style="resize:none" cols="123" rows="8" placeholder="Edit task..."
-                  ng-model="formData.newtitle"></textarea>
+                  ng-model="formData.newtitle" autofocus></textarea>
                 </label>
               </div>
               <div class="padding">
@@ -148,12 +146,12 @@
             <form ng-submit="createProject(name)">
               <div class="list">
                 <label class="item item-input">
-                  <textarea style="resize:none" cols='123' rows='8' placeholder="Add project..."
-                  ng-model="name"></textarea>
+                  <textarea style="resize:none" cols="123" rows="8" placeholder="Add project..."
+                  ng-model="name" autofocus></textarea>
                 </label>
               </div>
               <div class="padding">
-                <button type="submit" class="button button-bar button-royal">
+                <button type="submit" id="btn" class="button button-bar button-royal">
                   Add</button>
               </div>
             </form>

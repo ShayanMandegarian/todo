@@ -41,12 +41,12 @@ app.controller('TodoCtrl', function ($scope, $rootScope, $timeout, $ionicModal,
 Projects, $ionicSideMenuDelegate) {
 
   $scope.createProject = function(projectTitle) {
-    //console.log("projectTitle", projectTitle);
     var newProject = Projects.newProject(projectTitle);
     $scope.projects.push(newProject);
     Projects.save($scope.projects);
     $scope.selectProject(newProject, $scope.projects.length-1);
     $scope.projectModal.hide();
+    projectTitle = '';
   }
   $scope.projects = Projects.all();
 
@@ -63,6 +63,22 @@ Projects, $ionicSideMenuDelegate) {
     $scope.activeProject = project;
     Projects.setLastActiveIndex(index);
     $ionicSideMenuDelegate.toggleLeft(false);
+  };
+
+  $scope.delProject = function(project) {
+    var index = $scope.projects.indexOf(project);
+    $scope.projects.splice(index, 1);
+    Projects.save($scope.projects);
+    var prev = index - 1;
+    if (prev < 0) {
+      prev = index;
+    }
+    var prevProj = $scope.projects[prev];
+    $scope.activeProject = prevProj;
+    Projects.setLastActiveIndex(prev);
+    if ($scope.projects.length == 0) {
+      $scope.makeProject();
+    }
   };
 
   $ionicModal.fromTemplateUrl('new-task.html', function(modal) {
@@ -82,6 +98,8 @@ Projects, $ionicSideMenuDelegate) {
 
   $scope.createTask = function(task) {
     if(!$scope.activeProject || !task) {
+      $scope.taskModal.hide();
+      $scope.makeProject();
       return;
     }
     $scope.activeProject.tasks.push({
@@ -95,13 +113,10 @@ Projects, $ionicSideMenuDelegate) {
   $scope.formData = {};
 
   $scope.doEdit = function(task) {
-    // console.log('doedit, TITLE = ', $scope.formData.newtitle);
     $scope.taskEditModal.show();
     var index = $scope.activeProject.tasks.indexOf(task);
     $rootScope.etask = task;
     $rootScope.eindex = index;
-    // console.log('index= ', $rootScope.eindex)
-    //$scope.activeProject.tasks[index].title = "test";
   };
   $scope.removeTask = function(task) {
     var index = $scope.activeProject.tasks.indexOf(task);
@@ -111,17 +126,13 @@ Projects, $ionicSideMenuDelegate) {
 
   $scope.setNew = function() {
     $rootScope.etitle = $rootScope.newtitle;
-    // console.log('setnew, title = ', $scope.formData.newtitle);
   }
 
   $scope.editTask = function(task) {
     $scope.taskEditModal.show();
-    //$scope.doEdit(task);
   };
 
   $scope.finishEdit = function() {
-    // console.log('finish SCOPE TITLE', $scope.formData.newtitle);
-    // console.log($rootScope.eindex, $scope.formData.newtitle);
     $scope.activeProject.tasks[$rootScope.eindex].title = $scope.formData.newtitle;
     Projects.save($scope.projects);
     $scope.taskEditModal.hide();
@@ -133,6 +144,10 @@ Projects, $ionicSideMenuDelegate) {
   };
 
   $scope.newTask = function() {
+    if (!$scope.activeProject) {
+      $scope.makeProject();
+      return;
+    }
     $scope.taskModal.show();
   };
 
