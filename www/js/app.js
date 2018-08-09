@@ -45,8 +45,8 @@ Projects, $ionicSideMenuDelegate) {
     $scope.projects.push(newProject);
     Projects.save($scope.projects);
     $scope.selectProject(newProject, $scope.projects.length-1);
-    $scope.projectModal.hide();
     projectTitle = '';
+    $scope.projectModal.hide();
   }
   $scope.projects = Projects.all();
 
